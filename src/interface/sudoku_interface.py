@@ -23,6 +23,7 @@ BUTTON_GAP = 20 # 20px between the buttons
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (200, 200, 200)
+HIGHLIGHT_COLOR = (150, 150, 150)
 
 # Pygame initialization
 pygame.init()
@@ -30,7 +31,7 @@ window = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE+2*BUTTON_GAP+BUTTON_H
 pygame.display.set_caption("Sudoku")
 
 # Initial grid example (remplace with your own grid)
-grid = np.zeros((GRID_SIZE, GRID_SIZE), dtype=int)
+grid = generate_grid()
 
 # Buttons
 generate_button = pygame.Rect(BUTTON_GAP, WINDOW_SIZE + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -38,10 +39,21 @@ check_button = pygame.Rect(2*BUTTON_GAP+BUTTON_WIDTH, WINDOW_SIZE + BUTTON_GAP, 
 reset_button = pygame.Rect(3*BUTTON_GAP+2*BUTTON_WIDTH, WINDOW_SIZE + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT)
 hint_button = pygame.Rect(4*BUTTON_GAP+3*BUTTON_WIDTH, WINDOW_SIZE + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT)
 
+# Selected cell
+selected_cell = None
+
 # Function to draw the grid
-def draw_grid(win):
+def draw_grid(win, highlight_cell, selected_cell=None):
     # Draw the Sudoku grid
     win.fill(GREY)
+    
+    # Highlight the selected cell
+    if selected_cell is not None:
+        pygame.draw.rect(win, (180, 180, 250), (selected_cell[1] * CELL_SIZE, selected_cell[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+    
+    # Highlight the cell under the mouse
+    if (0 <= highlight_cell[0] < GRID_SIZE and 0 <= highlight_cell[1] < GRID_SIZE) and (highlight_cell != selected_cell):
+        pygame.draw.rect(win, HIGHLIGHT_COLOR, (highlight_cell[1] * CELL_SIZE, highlight_cell[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
     
     # Lines and columns
     for i in range(GRID_SIZE + 1):
@@ -71,11 +83,14 @@ def draw_numbers(win, grid):
         for col in range(GRID_SIZE):
             num = grid[row][col]
             if num != 0:
-                text = font.render(str(num), True, WHITE)
+                text = font.render(str(num), True, BLACK)
                 win.blit(text, (col * CELL_SIZE + (CELL_SIZE/2.5), row * CELL_SIZE + (CELL_SIZE/3)))
                 
 # Main loop
 def main():
+    global selected_cell
+    global grid
+    
     running = True
     while running:
         for event in pygame.event.get():
@@ -83,16 +98,50 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if generate_button.collidepoint(event.pos):
-                    generate_grid()
+                    grid = generate_grid()
                 elif check_button.collidepoint(event.pos):
                     check_grid()
                 elif reset_button.collidepoint(event.pos):
                     reset_grid()
                 elif hint_button.collidepoint(event.pos):
                     place_hint()
+                else :
+                    # Get the cell selected by the mouse
+                    mouse_pos = pygame.mouse.get_pos()
+                    selected_cell = (mouse_pos[1] // CELL_SIZE, mouse_pos[0] // CELL_SIZE)
+            elif event.type == pygame.KEYDOWN:
+                # Set the number in the selected cell
+                if selected_cell is not None:
+                    row, col = selected_cell
+                    if event.key == pygame.K_1 or event.key == pygame.K_KP1:
+                        grid[row][col] = 1
+                    elif event.key == pygame.K_2 or event.key == pygame.K_KP2:
+                        grid[row][col] = 2
+                    elif event.key == pygame.K_3 or event.key == pygame.K_KP3:
+                        grid[row][col] = 3
+                    elif event.key == pygame.K_4 or event.key == pygame.K_KP4:
+                        grid[row][col] = 4
+                    elif event.key == pygame.K_5 or event.key == pygame.K_KP5:
+                        grid[row][col] = 5
+                    elif event.key == pygame.K_6 or event.key == pygame.K_KP6:
+                        grid[row][col] = 6
+                    elif event.key == pygame.K_7 or event.key == pygame.K_KP7:
+                        grid[row][col] = 7
+                    elif event.key == pygame.K_8 or event.key == pygame.K_KP8:
+                        grid[row][col] = 8
+                    elif event.key == pygame.K_9 or event.key == pygame.K_KP9:
+                        grid[row][col] = 9
+                    elif event.key == pygame.K_0 or event.key == pygame.K_KP0 or event.key == pygame.K_BACKSPACE:
+                        # Delete the number with 0, Numpad 0, or Backspace
+                        grid[row][col] = 0
+                    selected_cell = None
                 
+        # Highlight the cell under the mouse
+        mouse_pos = pygame.mouse.get_pos()
+        highlight_cell = (mouse_pos[1] // CELL_SIZE, mouse_pos[0] // CELL_SIZE)
+        
         # Draw the grid and numbers
-        draw_grid(window)
+        draw_grid(window, highlight_cell, selected_cell) if selected_cell is not None else draw_grid(window, highlight_cell)
         draw_numbers(window, grid)
         
         pygame.display.update()
