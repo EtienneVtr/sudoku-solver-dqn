@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-difficulty = {"easy": 1, "medium": 2, "hard": 3, "expert": 4}
+difficulty_levels = {"easy": 1, "medium": 2, "hard": 3, "expert": 4}
 
 def generate_grid(difficulty="medium"):
     # Create a 9x9 grid of zeros
@@ -16,7 +16,8 @@ def generate_grid(difficulty="medium"):
     # Save the grid as the solution before removing numbers
     save_grid(grid, difficulty, True)
     
-    
+    # Remove numbers from the grid to create the puzzle
+    remove_numbers(grid, difficulty)
     
     return grid
 
@@ -107,3 +108,15 @@ def save_grid(grid, difficulty, solution=False):
             f.write(" ".join(map(str, row)) + "\n")  # Convert the row to a string of numbers separated by spaces
     
     print(f"Grid saved under the name : {file_path}")
+    
+def remove_numbers(grid, difficulty):
+    # Define the number of cells to remove based on the difficulty
+    n_cells = np.random.randint(9,12) * (difficulty_levels[difficulty]+2) # Number of cells to remove
+                                                                          # Example : for medium difficulty (=2), n_cells ~= 10*(2+2) = 40
+    
+    # Generate a random permutation of the cells
+    permutation = np.random.permutation(81)
+    
+    for i in range(n_cells):
+        row, col = permutation[i] // 9, permutation[i] % 9
+        grid[row][col] = 0
