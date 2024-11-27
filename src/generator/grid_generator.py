@@ -3,7 +3,8 @@ import os
 
 difficulty_levels = {"easy": 1, "medium": 2, "hard": 3, "expert": 4}
 
-def generate_grid(difficulty="medium"):
+# Function to generate a Sudoku grid
+def generate_grid(difficulty="hard"):
     # Create a 9x9 grid of zeros
     grid = np.zeros((9, 9), dtype=int)
     
@@ -21,6 +22,7 @@ def generate_grid(difficulty="medium"):
     
     return grid
 
+# Function to fill the diagonal 3x3 grids with random permutations of 1-9
 def fill_diagonal_grids(grid):
     for i in range(3):
         # Generate a random permutation of 1-9
@@ -30,6 +32,7 @@ def fill_diagonal_grids(grid):
         
     return grid
 
+# Function to fill the remaining empty cells of the grid
 def fill_remaining_grids(grid):
     empty_cell = find_empty_cell(grid)  # Find an empty cell
     if not empty_cell:
@@ -51,6 +54,7 @@ def fill_remaining_grids(grid):
 
     return False  # No valid number found for this cell
 
+# Function to find an empty cell in the grid
 def find_empty_cell(grid):
     for i in range(9):
         for j in range(9):
@@ -58,6 +62,7 @@ def find_empty_cell(grid):
                 return i, j
     return None  # No empty cell found
 
+# Function to check if a cell is valid, i.e., if the number can be placed in the cell
 def check_cell(grid, row, col, num):
     # Verify the row
     if num in grid[row]:
@@ -76,6 +81,7 @@ def check_cell(grid, row, col, num):
 
     return True
 
+# Function to check if the grid is valid
 def check_grid(grid):
     for i in range(9):
         for j in range(9):
@@ -86,6 +92,7 @@ def check_grid(grid):
                 return False
     return True
 
+# Function to save the grid to a file
 def save_grid(grid, difficulty, solution=False):
     # Path of the folder where the grids will be saved
     folder_path = os.path.join(os.path.dirname(__file__), "../../data/grids/")
@@ -109,14 +116,69 @@ def save_grid(grid, difficulty, solution=False):
     
     print(f"Grid saved under the name : {file_path}")
     
+# Function to remove numbers from the grid to create the puzzle
 def remove_numbers(grid, difficulty):
-    # Define the number of cells to remove based on the difficulty
-    n_cells = np.random.randint(9,12) * (difficulty_levels[difficulty]+2) # Number of cells to remove
-                                                                          # Example : for medium difficulty (=2), n_cells ~= 10*(2+2) = 40
+    # Determine how many cells to remove
+    n_cells = min(np.random.randint(9, 12) * (difficulty_levels[difficulty] + 2), 64) # Example for difficulty = 'medium' :
+                                                                                      # n_cells ~= min(10*(2+2), 64) = 40
+                                                                                      
+    # Generate a distribution of numbers
+    target_distribution = generate_distribution(difficulty, n_cells)
+    current_counts = np.sum(grid != 0, axis=0).tolist()  # Count of current numbers
     
-    # Generate a random permutation of the cells
+    # Shuffle the cells to remove them randomly
     permutation = np.random.permutation(81)
     
-    for i in range(n_cells):
+    i = 0
+    while n_cells > 0 and i < 81:
         row, col = permutation[i] // 9, permutation[i] % 9
-        grid[row][col] = 0
+        num = grid[row][col]
+        
+        # Check if we can remove this cell while respecting the distribution
+        if num != 0 and current_counts[num - 1] > target_distribution[num - 1]:
+            grid[row][col] = 0
+            current_counts[num - 1] -= 1
+            n_cells -= 1
+            
+        i += 1
+      
+# Function to generate a distribution of numbers to remove  
+def generate_distribution(difficulty, n_cells):
+    # Define means and standard deviations for each difficulty
+    difficulty_params = {
+        "easy": {"mean": 9, "std": 1},    # High mean, tight distribution
+        "medium": {"mean": 7, "std": 2},  # Intermediate mean
+        "hard": {"mean": 5, "std": 3},    # Low mean, more variation
+        "expert": {"mean": 3, "std": 4},  # Very low mean, high variation
+    }
+    
+    params = difficulty_params[difficulty]
+    
+    # Generate a normal distribution for 9 numbers
+    raw_distribution = np.random.normal(loc=params["mean"], scale=params["std"], size=9)
+    
+    # Convert to integers and adjust to stay within realistic bounds
+    distribution = np.clip(np.round(raw_distribution), 1, 9).astype(int)
+    
+    # Calculate the total number of cells to retain
+    n_retained_cells = 81 - n_cells
+    
+    # Adjust the distribution to match the total retained cells
+    while sum(distribution) > n_retained_cells:  # Too many numbers
+        for i in range(9):
+            if distribution[i] > 1:  # Reduce larger numbers first
+                distribution[i] -= 1
+                if sum(distribution) == n_retained_cells:
+                    break
+    
+    while sum(distribution) < n_retained_cells:  # Too few numbers
+        for i in range(9):
+            if distribution[i] < 9:  # Increase smaller numbers first
+                distribution[i] += 1
+                if sum(distribution) == n_retained_cells:
+                    break
+    
+    # Shuffle the order of the numbers for randomness
+    np.random.shuffle(distribution)
+        
+    return distribution

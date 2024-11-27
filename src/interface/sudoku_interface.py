@@ -9,7 +9,7 @@ import numpy as np
 
 from src.generator.grid_generator import generate_grid
 from src.solver.sudoku_solver import check_grid, place_hint
-from src.utils.utils import reset_grid
+from src.utils.utils import reset_grid, is_initial_cell
 
 # Display configuration
 WINDOW_SIZE = 540 # window of 540x540 pixels (9x9 grid)
@@ -32,6 +32,7 @@ pygame.display.set_caption("Sudoku")
 
 # Initial grid example (remplace with your own grid)
 grid = generate_grid()
+initial_grid = np.copy(grid)
 
 # Buttons
 generate_button = pygame.Rect(BUTTON_GAP, WINDOW_SIZE + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -105,10 +106,14 @@ def main():
                     reset_grid()
                 elif hint_button.collidepoint(event.pos):
                     place_hint()
-                else :
+                else:
                     # Get the cell selected by the mouse
                     mouse_pos = pygame.mouse.get_pos()
-                    selected_cell = (mouse_pos[1] // CELL_SIZE, mouse_pos[0] // CELL_SIZE)
+                    row, col = mouse_pos[1] // CELL_SIZE, mouse_pos[0] // CELL_SIZE
+
+                    # Check if the selected cell is within the grid
+                    if 0 <= row < GRID_SIZE and 0 <= col < GRID_SIZE and not is_initial_cell(row, col, initial_grid):
+                        selected_cell = (row, col)
             elif event.type == pygame.KEYDOWN:
                 # Set the number in the selected cell
                 if selected_cell is not None:
