@@ -19,6 +19,24 @@ def check_grid(initial_grid, grid):
                 grid[i][j] = num
     return errors
 
-def place_hint():
-    print("Placing hint")
-    return
+# Function to place a hint in the grid
+def place_hint(solution_grid, grid, hints):
+    # Count the number of each digit in the grid
+    count = [0] * 10
+    for i in range(9):
+        for j in range(9):
+            count[grid[i][j]] += 1
+    
+    # Find the digit with the least occurrences
+    min_count = min(count[1:])
+    least_present_digit = count[1:].index(min_count) + 1
+    if min_count == 9:
+        return grid, hints
+    
+    # Find the first cell with the digit
+    for i in range(9):
+        for j in range(9):
+            if grid[i][j] == 0 and solution_grid[i][j] == least_present_digit:
+                hints.append((i,j))
+                grid[i][j] = least_present_digit
+                return grid, hints

@@ -16,11 +16,12 @@ def generate_grid(difficulty="hard"):
     
     # Save the grid as the solution before removing numbers
     save_grid(grid, difficulty, True)
+    solution_grid = np.copy(grid)
     
     # Remove numbers from the grid to create the puzzle
     remove_numbers(grid, difficulty)
     
-    return grid
+    return solution_grid, grid
 
 # Function to fill the diagonal 3x3 grids with random permutations of 1-9
 def fill_diagonal_grids(grid):

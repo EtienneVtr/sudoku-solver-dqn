@@ -31,7 +31,7 @@ window = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE+2*BUTTON_GAP+BUTTON_H
 pygame.display.set_caption("Sudoku")
 
 # Initial grid example (remplace with your own grid)
-grid = generate_grid()
+solution_grid, grid = generate_grid()
 initial_grid = np.copy(grid)
 
 # Buttons
@@ -46,14 +46,13 @@ selected_cell = None
 # List of non-correct cells
 errors = []
 
+# List of hints
+hints = []
+
 # Function to draw the grid
 def draw_grid(win, highlight_cell, selected_cell=None):
     # Draw the Sudoku grid
     win.fill(GREY)
-    
-    # Highlight the selected cell
-    if selected_cell is not None:
-        pygame.draw.rect(win, (180, 180, 250), (selected_cell[1] * CELL_SIZE, selected_cell[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
     
     # Highlight the cell under the mouse
     if (0 <= highlight_cell[0] < GRID_SIZE and 0 <= highlight_cell[1] < GRID_SIZE) and (highlight_cell != selected_cell):
@@ -62,6 +61,14 @@ def draw_grid(win, highlight_cell, selected_cell=None):
     # Highlight the cells with errors
     for error in errors:
         pygame.draw.rect(win, (250, 180, 180), (error[1] * CELL_SIZE, error[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        
+    # Highlight the cells with hints
+    for hint in hints:
+        pygame.draw.rect(win, (180, 250, 180), (hint[1] * CELL_SIZE, hint[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        
+    # Highlight the selected cell
+    if selected_cell is not None:
+        pygame.draw.rect(win, (180, 180, 250), (selected_cell[1] * CELL_SIZE, selected_cell[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
     
     # Lines and columns
     for i in range(GRID_SIZE + 1):
@@ -99,6 +106,9 @@ def main():
     global selected_cell
     global grid
     global errors
+    global hints
+    global initial_grid
+    global solution_grid
     
     running = True
     while running:
@@ -107,68 +117,50 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if generate_button.collidepoint(event.pos):
-                    grid = generate_grid()
+                    solution_grid, grid = generate_grid()
+                    initial_grid = np.copy(grid)
+                    errors = []
+                    hints = []
                 elif check_button.collidepoint(event.pos):
                     errors = check_grid(initial_grid, grid)
                 elif reset_button.collidepoint(event.pos):
                     reset_grid(initial_grid, grid)
                     errors = []
+                    hints = []
                 elif hint_button.collidepoint(event.pos):
-                    place_hint()
+                    grid, hints = place_hint(solution_grid, grid, hints)
                 else:
                     # Get the cell selected by the mouse
                     mouse_pos = pygame.mouse.get_pos()
                     row, col = mouse_pos[1] // CELL_SIZE, mouse_pos[0] // CELL_SIZE
 
                     # Check if the selected cell is within the grid
-                    if 0 <= row < GRID_SIZE and 0 <= col < GRID_SIZE and not is_initial_cell(row, col, initial_grid):
+                    if 0 <= row < GRID_SIZE and 0 <= col < GRID_SIZE and not is_initial_cell(row, col, initial_grid) and not (row, col) in hints:
                         selected_cell = (row, col)
+                        
             elif event.type == pygame.KEYDOWN:
-                # Set the number in the selected cell
-                if selected_cell is not None:
-                    row, col = selected_cell
-                    if event.key == pygame.K_1 or event.key == pygame.K_KP1:
-                        grid[row][col] = 1
-                        # Delete the cell from the errors list if it was there
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_2 or event.key == pygame.K_KP2:
-                        grid[row][col] = 2
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_3 or event.key == pygame.K_KP3:
-                        grid[row][col] = 3
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_4 or event.key == pygame.K_KP4:
-                        grid[row][col] = 4
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_5 or event.key == pygame.K_KP5:
-                        grid[row][col] = 5
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_6 or event.key == pygame.K_KP6:
-                        grid[row][col] = 6
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_7 or event.key == pygame.K_KP7:
-                        grid[row][col] = 7
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_8 or event.key == pygame.K_KP8:
-                        grid[row][col] = 8
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_9 or event.key == pygame.K_KP9:
-                        grid[row][col] = 9
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
-                    elif event.key == pygame.K_0 or event.key == pygame.K_KP0 or event.key == pygame.K_BACKSPACE:
-                        # Delete the number with 0, Numpad 0, or Backspace
-                        grid[row][col] = 0
-                        if selected_cell in errors:
-                            errors.remove(selected_cell)
+                # Mapping keys to values
+                key_to_value = {
+                    pygame.K_1: 1, pygame.K_KP1: 1,
+                    pygame.K_2: 2, pygame.K_KP2: 2,
+                    pygame.K_3: 3, pygame.K_KP3: 3,
+                    pygame.K_4: 4, pygame.K_KP4: 4,
+                    pygame.K_5: 5, pygame.K_KP5: 5,
+                    pygame.K_6: 6, pygame.K_KP6: 6,
+                    pygame.K_7: 7, pygame.K_KP7: 7,
+                    pygame.K_8: 8, pygame.K_KP8: 8,
+                    pygame.K_9: 9, pygame.K_KP9: 9,
+                    pygame.K_0: 0, pygame.K_KP0: 0,
+                    pygame.K_BACKSPACE: 0,
+                }
+
+                # Check if the key corresponds to a value
+                if event.key in key_to_value:
+                    # Update the cell with the value associated with the key
+                    grid[row][col] = key_to_value[event.key]
+                    # Remove the cell from errors if it is correct
+                    if selected_cell in errors:
+                        errors.remove(selected_cell)
                     selected_cell = None
                 
         # Highlight the cell under the mouse
