@@ -10,48 +10,59 @@ This project is a Sudoku Solver using a Deep Q-Network (DQN).
 
 ## Roadmap
 
-### Creation of a Sudoku Game Interface
-- Develop an interface (e.g., Pygame or Tkinter) to visualize the grid state, agent actions, and its progress in real-time. This will also be used to observe results during training.
+### Creation of a Sudoku Game Interface (Done)
+- Develop an interface with Pygame to play Sudoku
 
-### Creation of a Sudoku Grid Generator
-- Design a grid generator capable of producing Sudokus of varying difficulty levels. This will allow testing the agent on increasingly complex levels.
-- Create grids with multiple solutions and others with a unique solution to diversify training scenarios.
+### Creation of a Sudoku puzzle generator (Done)
+- Develop a Sudoku puzzle generator
+- Create a grid which follows the rules of Sudoku
+- Remove some numbers from the grid to create a puzzle
+- The number of removed numbers depends on the difficulty level
+- We also modify the number's distribution to make the puzzle more difficult
+- The puzzle has at least one solution, but it can have more
 
-### Creation of a Grid Validity Function
-- Code a function that validates each attempt by the agent: check rows, columns, and sub-grids for duplicates or inconsistencies.
-- Record errors to assign penalties and adjust rewards based on the agent's actions, guiding its learning.
-- Implement real-time validation so the agent receives immediate positive or negative feedback after each action.
+### Creation of a Sudoku Solver (Not done)
+- We want to create a Sudoku Solver using different algorithms
+- The aim is to count the number of solutions for a given puzzle
+- If a puzzle has only one solution, we can use it for the game. Otherwise, we need to generate another puzzle
+- We will use:
+  - Backtracking with different heuristics
+  - Different SAT solvers
+  - Linear programming
+  - DLX with different heuristics
+- We will compare the different algorithms to find the best one in a Notebook
 
-### Creation of a Sudoku Grid Solver
-- Program an exact solver (e.g., using backtracking) to solve the grids. It will serve as a "reference" to evaluate the agent's performance at each training stage.
-- Use the solver to test the agent and validate the accuracy of its solutions by comparing the agent's final grid with the exact solution.
+### Creation of a Sudoku Solver using a DQN (Not done)
+- We want to create a Sudoku Solver using a DQN
+- The aim is to train the DQN to solve Sudoku puzzles
+- For this, we will use a dataset of Sudoku puzzles with their solutions (source: [Kaggle](https://www.kaggle.com/code/rohanrao/peter-norvig-s-sudoku-solver/input))
 
-### Implementation of the DQN (Deep Q-Network)
-- Design the architecture of your DQN with a dense neural network (or convolutional to capture spatial relationships in the grid). You can use libraries like PyTorch or TensorFlow to build and train the model.
-- Define the state space as the current Sudoku grid and the action space as the values the agent can place in each cell.
-- Implement an experience replay mechanism (replay buffer) to store experiences (state, action, reward, next state) and train the network in batches.
+## Installation
 
-### Definition of the Reward and Penalty System
-- Assign small rewards for each correctly placed cell and penalties for each action creating duplicates (in row, column, or sub-grid).
-- Add a large reward for each grid completed without errors to maximize the agent's learning on valid grids.
-- Adjust the balance between rewards and penalties to guide the agent to follow Sudoku rules over episodes.
+### 1. Clone the repository
 
-### Curriculum Learning: Progressive Training
-- Train the agent first on simple grids, then gradually increase the difficulty to improve its ability to solve more complex Sudokus.
-- Enrich the agent's experience by confronting it with varied grids (different initial fill levels) to get used to new contexts.
+```bash
+git clone https://github.com/EtienneVtr/sudoku-solver-dqn.git
+cd sudoku-solver-dqn
+```
 
-### Training the DQN
-- Run training sessions and adjust hyperparameters (learning rate, gamma for cumulative reward, epsilon for exploration) to optimize learning.
-- Monitor model convergence and observe if the agent achieves better cumulative scores over time.
+### 2. Create a virtual environment
 
-### Visualization of Training Progress
-- Record different training epochs and plot graphs to track the evolution of cumulative rewards, error rates, and resolution times.
-- Add logs and display in real-time the actions chosen by the agent with their Q-values to facilitate debugging and analysis of the agent's decisions.
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-### Testing and Validation of the DQN Model
-- Test the agent on grids not present in the training dataset to verify its generalization ability.
-- Compare the solutions found by the agent with those of the reference solver to validate its efficiency and accuracy.
+### 3. Install the dependencies
 
-### Optimization and Final Adjustments
-- Fine-tune hyperparameters and adjust the reward system to correct any biases in the agent's behavior.
-- Test the model's stability to solve more complex grids and observe if modifications (like a convolutional network) could improve performance.
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the game
+
+#### For the Sudoku Game Interface
+
+```bash
+python src/interface/sudoku_interface.py
+```

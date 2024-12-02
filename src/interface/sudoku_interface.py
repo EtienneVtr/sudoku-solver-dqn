@@ -8,7 +8,7 @@ import pygame
 import numpy as np
 
 from src.generator.grid_generator import generate_grid
-from src.solver.sudoku_solver import check_grid, place_hint
+from src.solver.sudoku_solvers import check_grid, place_hint
 from src.utils.utils import reset_grid, is_initial_cell
 
 # Display configuration

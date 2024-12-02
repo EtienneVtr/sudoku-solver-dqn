@@ -1,5 +1,2 @@
-numpy
-matplotlib
-pygame
-torch
-seaborn
+numpy==2.1.3
+pygame==2.6.1
