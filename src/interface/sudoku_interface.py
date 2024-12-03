@@ -27,7 +27,7 @@ HIGHLIGHT_COLOR = (150, 150, 150)
 
 # Pygame initialization
 pygame.init()
-window = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE+2*BUTTON_GAP+BUTTON_HEIGHT))
+window = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE+3*BUTTON_GAP+3*BUTTON_HEIGHT))
 pygame.display.set_caption("Sudoku")
 
 # Initial grid example (remplace with your own grid)
@@ -40,6 +40,9 @@ check_button = pygame.Rect(2*BUTTON_GAP+BUTTON_WIDTH, WINDOW_SIZE + BUTTON_GAP, 
 reset_button = pygame.Rect(3*BUTTON_GAP+2*BUTTON_WIDTH, WINDOW_SIZE + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT)
 hint_button = pygame.Rect(4*BUTTON_GAP+3*BUTTON_WIDTH, WINDOW_SIZE + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT)
 
+# Slider for difficulty level
+slider_rect = pygame.Rect(BUTTON_GAP, WINDOW_SIZE + 2 * BUTTON_GAP + BUTTON_HEIGHT, WINDOW_SIZE - 2 * BUTTON_GAP, BUTTON_HEIGHT)
+
 # Selected cell
 selected_cell = None
 
@@ -48,6 +51,10 @@ errors = []
 
 # List of hints
 hints = []
+
+# Default difficulty level
+difficulty_levels = ["Easy", "Medium", "Hard", "Expert"]
+selected_difficulty_index = 1  # Default: Medium
 
 # Function to draw the grid
 def draw_grid(win, highlight_cell, selected_cell=None):
@@ -89,6 +96,31 @@ def draw_grid(win, highlight_cell, selected_cell=None):
     win.blit(font.render("Reset", True, BLACK), (reset_button.x + 30, reset_button.y + 10))
     win.blit(font.render("Help", True, BLACK), (hint_button.x + 35, hint_button.y + 10))
 
+# Function to draw the slider
+def draw_slider(win, difficulty_levels, selected_index):
+    # Draw the slider
+    pygame.draw.rect(win, GREY, slider_rect)
+    pygame.draw.line(win, BLACK, (slider_rect.x, slider_rect.y + slider_rect.height // 2),
+                     (slider_rect.x + slider_rect.width, slider_rect.y + slider_rect.height // 2), 2)
+    
+    # Draw the ticks
+    step = slider_rect.width // (len(difficulty_levels) - 1)
+    for i in range(len(difficulty_levels)):
+        x = slider_rect.x + i * step
+        pygame.draw.line(win, BLACK, (x, slider_rect.y), (x, slider_rect.y + slider_rect.height), 2)
+    
+    # Draw the cursor
+    cursor_x = slider_rect.x + selected_index * step
+    pygame.draw.circle(win, BLACK, (cursor_x, slider_rect.y + slider_rect.height // 2), 10)
+    
+    # Draw the text for the selected difficulty level
+    font = pygame.font.Font(None, 30)
+    difficulty_text = difficulty_levels[selected_index]
+    text_surface = font.render(difficulty_text, True, BLACK)
+    win.blit(text_surface, (slider_rect.x + slider_rect.width // 2 - text_surface.get_width() // 2,
+                            slider_rect.y + slider_rect.height + 5))
+
+
 # Function to draw the numbers
 def draw_numbers(win, grid):
     # Draw the numbers in the grid
@@ -109,6 +141,7 @@ def main():
     global hints
     global initial_grid
     global solution_grid
+    global selected_difficulty_index
     
     running = True
     while running:
@@ -117,7 +150,8 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if generate_button.collidepoint(event.pos):
-                    solution_grid, grid = generate_grid()
+                    difficulty = difficulty_levels[selected_difficulty_index].lower()
+                    solution_grid, grid = generate_grid(difficulty=difficulty)
                     initial_grid = np.copy(grid)
                     errors = []
                     hints = []
@@ -129,6 +163,16 @@ def main():
                     hints = []
                 elif hint_button.collidepoint(event.pos):
                     grid, hints = place_hint(solution_grid, grid, hints)
+                elif slider_rect.collidepoint(event.pos):
+                    # Calculate the selected difficulty level
+                    relative_x = event.pos[0] - slider_rect.x
+                    
+                    # Divide the slider into equal parts
+                    step = slider_rect.width / len(difficulty_levels)
+                    
+                    # Find the index of the selected difficulty level
+                    selected_difficulty_index = int(relative_x // step)
+                    selected_difficulty_index = max(0, min(len(difficulty_levels) - 1, selected_difficulty_index))
                 else:
                     # Get the cell selected by the mouse
                     mouse_pos = pygame.mouse.get_pos()
@@ -170,6 +214,7 @@ def main():
         # Draw the grid and numbers
         draw_grid(window, highlight_cell, selected_cell) if selected_cell is not None else draw_grid(window, highlight_cell)
         draw_numbers(window, grid)
+        draw_slider(window, difficulty_levels, selected_difficulty_index)
         
         pygame.display.update()
         

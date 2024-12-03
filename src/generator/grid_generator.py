@@ -10,7 +10,7 @@ from src.solver.sudoku_solvers import lp_solver
 difficulty_levels = {"easy": 1, "medium": 2, "hard": 3, "expert": 4}
 
 # Function to generate a Sudoku grid
-def generate_grid(difficulty="hard"):
+def generate_grid(difficulty="medium"):
     # Create a 9x9 grid of zeros
     grid = np.zeros((9, 9), dtype=int)
     
