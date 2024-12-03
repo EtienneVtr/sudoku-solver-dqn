@@ -1,5 +1,11 @@
 import numpy as np
+import sys
 import os
+
+# Add the root directory to the path in order to import the modules
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+
+from src.solver.sudoku_solvers import lp_solver
 
 difficulty_levels = {"easy": 1, "medium": 2, "hard": 3, "expert": 4}
 
@@ -15,11 +21,18 @@ def generate_grid(difficulty="hard"):
     fill_remaining_grids(grid)
     
     # Save the grid as the solution before removing numbers
-    save_grid(grid, difficulty, True)
+    # save_grid(grid, difficulty, True)
     solution_grid = np.copy(grid)
     
     # Remove numbers from the grid to create the puzzle
     remove_numbers(grid, difficulty)
+    
+    # Testing the number of solutions
+    nb_solutions = lp_solver(grid)
+    while nb_solutions != 1:
+        grid = np.copy(solution_grid)
+        remove_numbers(grid, difficulty)
+        nb_solutions = lp_solver(grid)
     
     return solution_grid, grid
 

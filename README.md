@@ -21,18 +21,18 @@ This project is a Sudoku Solver using a Deep Q-Network (DQN).
 - We also modify the number's distribution to make the puzzle more difficult
 - The puzzle has at least one solution, but it can have more
 
-### Creation of a Sudoku Solver (Not done)
+### Creation of a Sudoku Solver (Done)
 - We want to create a Sudoku Solver using different algorithms
 - The aim is to count the number of solutions for a given puzzle
 - If a puzzle has only one solution, we can use it for the game. Otherwise, we need to generate another puzzle
 - We will use:
   - Backtracking with different heuristics:
     - Degree heuristic
-    - Random variable heuristic
     - MRV heuristic
     - LCV heuristic
   - Linear programming
 - We will compare the different algorithms to find the best one in a Notebook
+- Result: we'll use the Linear Programming algorithm to solve the puzzles
 
 ### Creation of a Sudoku Solver using a DQN (Not done)
 - We want to create a Sudoku Solver using a DQN

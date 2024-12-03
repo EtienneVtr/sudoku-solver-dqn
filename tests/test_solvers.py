@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 
 import numpy as np
 
-from src.solver.sudoku_solvers import backtracking_solver, lp_solver, degree_heuristic, mrv_heuristic, lcv_heuristic, random_heuristic
+from src.solver.sudoku_solvers import backtracking_solver, lp_solver, degree_heuristic, mrv_heuristic, lcv_heuristic
 
 def test_backtracking_solver(grid, heuristic=None):
     solution = backtracking_solver(grid, heuristic=heuristic)
@@ -43,9 +43,8 @@ def main():
     
     heursitics = [
         degree_heuristic,
-        mrv_heuristic,
         lcv_heuristic,
-        random_heuristic
+        mrv_heuristic
     ]
     
     # Tests
@@ -53,7 +52,7 @@ def main():
         print(f"Using {heuristic.__name__}:")
         test_backtracking_solver(grid, heuristic)
     test_backtracking_solver(grid)
-    # test_lp_solver(grid)
+    test_lp_solver(grid)
     
 if __name__ == "__main__":
     main()
